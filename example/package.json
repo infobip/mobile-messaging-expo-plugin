@@ -1,0 +1,26 @@
+{
+  "name": "infobip-expo-example",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "prebuild": "expo prebuild",
+    "prebuild:clean": "expo prebuild --clean"
+  },
+  "dependencies": {
+    "expo": "~55.0.0",
+    "expo-build-properties": "~0.14.0",
+    "expo-dev-client": "~55.0.18",
+    "infobip-mobile-messaging-react-native-plugin": "14.8.0",
+    "infobip-mobile-messaging-expo-plugin": "file:..",
+    "react": "19.2.0",
+    "react-native": "0.83.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "typescript": "~5.8.3"
+  },
+  "private": true
+}

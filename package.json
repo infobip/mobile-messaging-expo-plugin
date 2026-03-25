@@ -1,0 +1,32 @@
+{
+  "name": "infobip-mobile-messaging-expo-plugin",
+  "version": "0.1.0",
+  "description": "Expo config plugin for Infobip Mobile Messaging React Native SDK",
+  "main": "plugin/build/withInfobipMobileMessaging.js",
+  "types": "plugin/build/withInfobipMobileMessaging.d.ts",
+  "scripts": {
+    "build": "expo-module build plugin && cp -r plugin/src/support/nseTemplates plugin/build/support/nseTemplates",
+    "clean": "expo-module clean plugin",
+    "lint": "expo-module lint plugin"
+  },
+  "keywords": ["expo", "infobip", "push-notifications", "config-plugin"],
+  "license": "MIT",
+  "peerDependencies": {
+    "expo": ">=55.0.0"
+  },
+  "devDependencies": {
+    "expo-module-scripts": "^4.0.0",
+    "expo": "~55.0.0",
+    "typescript": "^5.0.0"
+  },
+  "workspaces": [
+    "example"
+  ],
+  "files": [
+    "plugin/build",
+    "plugin/src/support",
+    "app.plugin.js",
+    "ios",
+    "expo-module.config.json"
+  ]
+}

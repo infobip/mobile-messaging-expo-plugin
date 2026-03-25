@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "InfobipExpoExample",
+    "slug": "infobip-expo-example",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.infobip.mobilemessaging.reactnative.test",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.example",
+      "googleServicesFile": "./google-services.json"
+    },
+    "plugins": [
+      [
+        "infobip-mobile-messaging-expo-plugin",
+        {
+          "iosMode": "development",
+          "devTeam": "T6U248P7YM",
+          "iosAppGroup": "group.com.infobip.mobilemessaging.reactnative",
+          "enableNotificationExtension": true,
+          "nseVersion": "15.0.0",
+          "enableGoogleServices": true
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "InfobipNotificationServiceExtension",
+                  "bundleIdentifier": "com.infobip.mobilemessaging.reactnative.test.InfobipNotificationServiceExtension",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.infobip.mobilemessaging.reactnative"
+                    ],
+                    "aps-environment": "development"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "753328aa-075c-46d2-82f8-54b4f81aeb31"
+      }
+    },
+    "owner": "ivanbilobrk"
+  }
+}
