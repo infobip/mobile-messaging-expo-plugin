@@ -17,6 +17,22 @@ export const withInfobipInfoPlist: ConfigPlugin<InfobipPluginProps> = (config, p
       ?? `group.${newConfig.ios?.bundleIdentifier}.${props.iosAppGroupSuffix ?? DEFAULT_APP_GROUP_SUFFIX}`;
     newConfig.modResults[INFOBIP_APP_GROUP_PLIST_KEY] = groupId;
 
+    // Add deep link URL scheme if configured
+    if (props.deepLinkScheme) {
+      if (!Array.isArray(newConfig.modResults.CFBundleURLTypes)) {
+        newConfig.modResults.CFBundleURLTypes = [];
+      }
+      const urlTypes = newConfig.modResults.CFBundleURLTypes as any[];
+      const schemeExists = urlTypes.some((t: any) =>
+        t.CFBundleURLSchemes?.includes(props.deepLinkScheme)
+      );
+      if (!schemeExists) {
+        urlTypes.push({
+          CFBundleURLSchemes: [props.deepLinkScheme],
+        });
+      }
+    }
+
     return newConfig;
   });
 };

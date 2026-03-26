@@ -33,7 +33,8 @@
           "iosAppGroup": "group.com.infobip.mobilemessaging.reactnative",
           "enableNotificationExtension": true,
           "nseVersion": "15.0.0",
-          "enableGoogleServices": true
+          "enableGoogleServices": true,
+          "deepLinkScheme": "com.infobip.mobilemessaging"
         }
       ]
     ],

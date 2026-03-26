@@ -154,8 +154,8 @@ This is the **most complex and critical phase**.
 | 4.1 | `withInfobipGoogleServicesPlugin` - Root build.gradle | P0 | Add `com.google.gms:google-services:4.4.2` classpath using `withProjectBuildGradle` + `mergeContents` with tagged block. Handle both Groovy and Kotlin DSL syntax. Check for existing classpath before adding. |
 | 4.2 | `withInfobipGoogleServicesPlugin` - App build.gradle | P0 | Apply `com.google.gms.google-services` plugin using `withAppBuildGradle`. Check for existing `apply plugin` or `plugins { id(...) }` before adding. Handle both Groovy and KTS. |
 | 4.3 | `withInfobipGoogleServicesFile` - Copy google-services.json | P0 | Use `withDangerousMod` to copy `google-services.json` from user-specified path or `expo.android.googleServicesFile` to `android/app/`. Print clear warning if file doesn't exist. |
-| 4.4 | `withInfobipDeepLinks` - Optional deep link config | P2 | Use `withAndroidManifest` to add intent-filter with custom scheme if `deepLinkScheme` prop is set. |
-| 4.5 | `withInfobipWebRTC` - Optional WebRTC config | P2 | Use `withGradleProperties` to set `withWebRTCUI=true` if `enableWebRTC` prop is set. Defer to later version. |
+| 4.4 | `withInfobipDeepLinks` - Deep link config | P0 | **IMPLEMENTED.** Android: Add intent-filter with custom scheme + singleTask launchMode to MainActivity via `withAndroidManifest`. iOS: Add `CFBundleURLTypes` with scheme via `withInfoPlist`. Both idempotent (check for existing scheme before adding). |
+| 4.5 | `withInfobipWebRTC` - Optional WebRTC config | DEFERRED | Deferred to v1.1. Use `withGradleProperties` to set `withWebRTCUI=true` if `enableWebRTC` prop is set. |
 | 4.6 | Write unit tests for Android mods | P1 | Test gradle modifications, manifest changes, google-services.json copy. |
 
 ### Phase 5: Documentation & Polish (Estimated: 2-3 days)
@@ -860,8 +860,8 @@ infobip-mobile-messaging-expo-plugin/
 
 ### Version Strategy
 
-- **v1.0.0:** Core push notification support (iOS + Android), NSE, EAS Build support
-- **v1.1.0:** WebRTC/In-App Chat support, deep link configuration
+- **v1.0.0:** Core push notification support (iOS + Android), NSE, deep linking, EAS Build support
+- **v1.1.0:** LiveChat, WebRTC/In-App Calls support
 - **v1.2.0+:** Feature additions based on user feedback
 
 ### Expo SDK Compatibility
