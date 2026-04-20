@@ -19,7 +19,7 @@ export const withInfobipNSEFiles: ConfigPlugin<InfobipPluginProps> = (config, pr
       const groupId = props.iosAppGroup
         ?? `group.${bundleIdentifier}.${props.iosAppGroupSuffix ?? DEFAULT_APP_GROUP_SUFFIX}`;
 
-      const bundleShortVersion = newConfig.ios?.buildNumber ?? '1.0';
+      const bundleShortVersion = newConfig.version ?? '1.0.0';
       const bundleVersion = newConfig.ios?.buildNumber ?? '1';
 
       // NotificationService.swift

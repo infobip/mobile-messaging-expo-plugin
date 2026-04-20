@@ -1,4 +1,6 @@
 import { ConfigPlugin, withXcodeProject } from 'expo/config-plugins';
+import * as fs from 'fs';
+import * as path from 'path';
 import { InfobipPluginProps } from '../types';
 import {
   NSE_TARGET_NAME,
@@ -74,24 +76,30 @@ export const withInfobipXcodeProject: ConfigPlugin<InfobipPluginProps> = (config
     );
 
     // 6. Configure build settings
-    // Read deployment target from main app target to ensure NSE matches.
-    // Mismatch causes: "compiling for iOS X, but module has minimum deployment target Y"
-    let mainAppDeploymentTarget: string | undefined;
+    // Resolve the iOS deployment target for the NSE. Priority:
+    //   1. Explicit plugin prop (iosDeploymentTarget)
+    //   2. Podfile.properties.json 'ios.deploymentTarget' — this is what the Podfile
+    //      actually uses (`platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'`),
+    //      so pods are compiled at this level. The NSE target MUST match or exceed it,
+    //      otherwise: "compiling for iOS X, but module has minimum deployment target Y".
+    //   3. DEFAULT_IOS_DEPLOYMENT_TARGET (15.1, matching Expo SDK 55 Podfile default)
+    let podfileDeploymentTarget: string | undefined;
+    try {
+      const propsPath = path.join(newConfig.modRequest.projectRoot, 'ios', 'Podfile.properties.json');
+      if (fs.existsSync(propsPath)) {
+        const podfileProps = JSON.parse(fs.readFileSync(propsPath, 'utf-8'));
+        podfileDeploymentTarget = podfileProps['ios.deploymentTarget'];
+      }
+    } catch (e) {
+      // Ignore — fall through to default
+    }
+    const deploymentTarget = props.iosDeploymentTarget ?? podfileDeploymentTarget ?? DEFAULT_IOS_DEPLOYMENT_TARGET;
     const configurations = xcodeProject.pbxXCBuildConfigurationSection();
     for (const key in configurations) {
       if (
         typeof configurations[key] === 'object' &&
-        configurations[key].buildSettings?.PRODUCT_NAME === `"$(TARGET_NAME)"`
-      ) {
-        mainAppDeploymentTarget = configurations[key].buildSettings?.IPHONEOS_DEPLOYMENT_TARGET;
-        if (mainAppDeploymentTarget) break;
-      }
-    }
-    const deploymentTarget = props.iosDeploymentTarget ?? mainAppDeploymentTarget ?? DEFAULT_IOS_DEPLOYMENT_TARGET;
-    for (const key in configurations) {
-      if (
-        typeof configurations[key] === 'object' &&
-        configurations[key].buildSettings?.PRODUCT_NAME === `"${NSE_TARGET_NAME}"`
+        (configurations[key].buildSettings?.PRODUCT_NAME === NSE_TARGET_NAME ||
+         configurations[key].buildSettings?.PRODUCT_NAME === `"${NSE_TARGET_NAME}"`)
       ) {
         const bs = configurations[key].buildSettings;
         if (props.devTeam) {

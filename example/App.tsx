@@ -1,77 +1,192 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Platform, Alert } from 'react-native';
+//
+//  App.tsx
+//  InfobipExpoExample
+//
+//  Copyright (c) 2016-2025 Infobip Limited
+//  Licensed under the Apache License, Version 2.0
+//
 
-// @ts-ignore - RN plugin types
-import { mobileMessaging } from 'infobip-mobile-messaging-react-native-plugin';
+import React, {Component} from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
-export default function App() {
-  const [status, setStatus] = useState<string>('Initializing...');
+import {
+  mobileMessaging,
+  MobileMessagingError,
+} from 'infobip-mobile-messaging-react-native-plugin';
+import type {Configuration} from 'infobip-mobile-messaging-react-native-plugin';
 
-  useEffect(() => {
-    mobileMessaging.init(
-      {
-        applicationCode: 'Your application code',
-        ios: {
-          notificationTypes: ['alert', 'badge', 'sound'],
-        },
-        inAppChatEnabled: false,
-        fullFeaturedInAppsEnabled: true,
-        logging: true,
-      },
-      () => {
-        console.log('MobileMessaging initialized successfully');
-        setStatus('MobileMessaging initialized');
-      },
-      (error: any) => {
-        console.error('MobileMessaging init error:', error);
-        setStatus(`Init error: ${JSON.stringify(error)}`);
-      }
-    );
+import MyMessageStorage from './constants/MyMessageStorage';
+import Colors from './constants/Colors';
 
-    // Subscribe to message received event
-    mobileMessaging.subscribe('messageReceived', (message: any) => {
-      console.log('Message received:', message);
-      Alert.alert('Push Received', JSON.stringify(message.body || message));
-    });
+import HomeScreen from './screens/HomeScreen';
+import PersonalizeScreen from './screens/PersonalizeScreen';
+import UserDataScreen from './screens/UserDataScreen';
+import MessagesScreen from './screens/MessagesScreen';
+import InboxScreen from './screens/InboxScreen';
+import EventLogScreen from './screens/EventLogScreen';
+import TestDeeplinkingScreen from './screens/TestDeeplinkingScreen';
+import TestDeeplinkingScreen2 from './screens/TestDeeplinkingScreen2';
+import EventLogStore from './constants/EventLogStore';
 
-    return () => {
-      mobileMessaging.unsubscribe('messageReceived');
-    };
-  }, []);
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Infobip Expo Plugin POC</Text>
-      <Text style={styles.status}>{status}</Text>
-      <Text style={styles.info}>Platform: {Platform.OS}</Text>
-      <Text style={styles.info}>
-        Bundle: {Platform.OS === 'ios' ? 'com.infobip.mobilemessaging.reactnative.test' : 'com.example'}
-      </Text>
-    </View>
-  );
+interface AppState {
+  logInfo: string;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  status: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 10,
-  },
-  info: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 5,
-  },
-});
+type RootStackParamList = {
+  HomeScreen: undefined;
+  PersonalizeScreen: undefined;
+  UserDataScreen: undefined;
+  MessagesScreen: undefined;
+  InboxScreen: undefined;
+  EventLogScreen: undefined;
+  TestDeeplinkingScreen: undefined;
+  TestDeeplinkingScreen2: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const myMessageStorage = MyMessageStorage;
+
+async function persistEventLog(eventName: string, value: any): Promise<void> {
+  try {
+    await EventLogStore.add(eventName, value);
+  } catch (error) {
+    console.warn('Failed to persist event log entry', error);
+  }
+}
+
+class App extends Component<{}, AppState> {
+  configuration: Configuration = {
+    applicationCode: '',
+    ios: {
+      notificationTypes: ['alert', 'badge', 'sound'],
+    },
+    android: {},
+    messageStorage: myMessageStorage,
+    inAppChatEnabled: false,
+    fullFeaturedInAppsEnabled: true,
+
+    logging: true,
+  };
+
+  subscriptions: any[] = [];
+
+  constructor(props: {}) {
+    super(props);
+    this.state = {
+      logInfo: '...',
+    };
+    this.initMobileMessaging();
+  }
+
+  componentDidMount() {
+    const events = [
+      ...mobileMessaging.supportedEvents,
+    ];
+
+    events.forEach((event: string) => {
+      const subscription = mobileMessaging.subscribe(event, (value: any) => {
+        this.handleMobileMessagingEvent(event, value);
+      });
+      this.subscriptions.push(subscription);
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscriptions.forEach((subscription: any) => {
+      mobileMessaging.unsubscribe(subscription);
+    });
+  }
+
+  handleMobileMessagingEvent = (eventName: string, value: any) => {
+    const eventInfo = `Event: ${eventName}, Data: ${JSON.stringify(value)}`;
+    this.updateLogInfo(eventInfo);
+    void persistEventLog(eventName, value);
+  };
+
+  initMobileMessaging() {
+    mobileMessaging.init(
+      this.configuration,
+      () => {
+        this.updateLogInfo('MobileMessaging started');
+      },
+      (error: MobileMessagingError) => {
+        this.updateLogInfo('MobileMessaging error: ' + JSON.stringify(error));
+      },
+    );
+  }
+
+  updateLogInfo(info: string) {
+    console.log(info);
+    this.setState({logInfo: info});
+  }
+
+  render() {
+    return (
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="HomeScreen"
+          screenOptions={{
+            headerShown: true,
+            contentStyle: {backgroundColor: Colors.tintWhite},
+            headerTintColor: 'white',
+            headerStyle: {backgroundColor: Colors.primary500},
+          }}>
+          <Stack.Screen
+            name="HomeScreen"
+            component={HomeScreen}
+            options={{title: 'Infobip Push Example App'}}
+          />
+          <Stack.Screen
+            name="MessagesScreen"
+            component={MessagesScreen}
+            options={{title: 'Messages'}}
+          />
+          <Stack.Screen
+            name="InboxScreen"
+            component={InboxScreen}
+            options={{title: 'Inbox'}}
+          />
+          <Stack.Screen
+            name="EventLogScreen"
+            component={EventLogScreen}
+            options={{title: 'Event Log'}}
+          />
+          <Stack.Screen
+            name="PersonalizeScreen"
+            component={PersonalizeScreen}
+            options={{title: 'Personalize'}}
+          />
+          <Stack.Screen
+            name="UserDataScreen"
+            component={UserDataScreen}
+            options={{title: 'Edit User Data'}}
+          />
+          <Stack.Screen
+            name="TestDeeplinkingScreen"
+            component={TestDeeplinkingScreen}
+            options={{
+              title: 'Test Deeplinking',
+              headerStyle: {backgroundColor: Colors.primary500},
+              headerTintColor: Colors.tintWhite,
+              headerTitleStyle: {fontWeight: 'bold'},
+            }}
+          />
+          <Stack.Screen
+            name="TestDeeplinkingScreen2"
+            component={TestDeeplinkingScreen2}
+            options={{
+              title: 'Test Deeplinking2',
+              headerStyle: {backgroundColor: Colors.primary500},
+              headerTintColor: Colors.tintWhite,
+              headerTitleStyle: {fontWeight: 'bold'},
+            }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+  }
+}
+
+export default App;

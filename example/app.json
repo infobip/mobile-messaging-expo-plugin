@@ -6,15 +6,16 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.infobip.mobilemessaging.reactnative.test",
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"
-        ]
-      }
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "appleTeamId": "T6U248P7YM"
     },
     "android": {
       "adaptiveIcon": {
@@ -36,7 +37,8 @@
           "enableGoogleServices": true,
           "deepLinkScheme": "com.infobip.mobilemessaging"
         }
-      ]
+      ],
+      "expo-build-properties"
     ],
     "extra": {
       "eas": {
@@ -58,9 +60,9 @@
             }
           }
         },
-        "projectId": "753328aa-075c-46d2-82f8-54b4f81aeb31"
+        "projectId": "d5b60748-a3c0-4a1c-a155-6ac6e6ee6321"
       }
     },
-    "owner": "ivanbilobrk"
+    "owner": "team_mobile_messaging"
   }
 }

@@ -5,7 +5,8 @@
   "main": "plugin/build/withInfobipMobileMessaging.js",
   "types": "plugin/build/withInfobipMobileMessaging.d.ts",
   "scripts": {
-    "build": "expo-module build plugin && cp -r plugin/src/support/nseTemplates plugin/build/support/nseTemplates",
+    "build": "expo-module build plugin && mkdir -p plugin/build/support && rm -rf plugin/build/support/nseTemplates && cp -r plugin/src/support/nseTemplates plugin/build/support/nseTemplates",
+    "postinstall": "npm run build",
     "clean": "expo-module clean plugin",
     "lint": "expo-module lint plugin"
   },
