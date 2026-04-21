@@ -71,7 +71,7 @@ pipeline {
         booleanParam(
             name: 'SKIP_EAS_BUILDS',
             defaultValue: false,
-            description: 'Skip local EAS buids (faster feedback for plugin-only changes)'
+            description: 'Skip local EAS builds (faster feedback for plugin-only changes)'
         )
         booleanParam(
             name: 'PUBLISH',
@@ -224,6 +224,9 @@ pipeline {
         stage('Local EAS Builds') {
             when {
                 expression { return params.SKIP_EAS_BUILDS != true }
+            }
+            environment {
+                EXPO_TOKEN = credentials('expo-token')
             }
             parallel {
                 stage('EAS Build iOS') {
