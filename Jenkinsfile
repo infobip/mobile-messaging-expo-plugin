@@ -68,10 +68,10 @@ pipeline {
             choices: ['both', 'ios', 'android'],
             description: 'Platform to build: both, ios only, or android only'
         )
-        booleanParam(
-            name: 'SKIP_EAS_BUILDS',
-            defaultValue: false,
-            description: 'Skip local EAS builds (faster feedback for plugin-only changes)'
+        choice(
+            name: 'EAS_BUILD_MODE',
+            choices: ['local', 'remote', 'skip'],
+            description: 'EAS build mode: local (on this machine), remote (on EAS servers), skip (no builds)'
         )
         booleanParam(
             name: 'PUBLISH',
@@ -109,6 +109,14 @@ pipeline {
 
                     env.GIT_COMMIT = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                     env.DISPLAY_BRANCH = branchToCheckout
+
+                    // Publishing requires remote EAS build — override if needed
+                    if (params.PUBLISH && env.EFFECTIVE_EAS_MODE != 'remote') {
+                        echo "PUBLISH is enabled — forcing EAS_BUILD_MODE to 'remote'"
+                        env.EFFECTIVE_EAS_MODE = 'remote'
+                    } else {
+                        env.EFFECTIVE_EAS_MODE = env.EFFECTIVE_EAS_MODE ?: 'local'
+                    }
                     env.PLUGIN_VERSION = sh(script: "node -p \"require('./package.json').version\"", returnStdout: true).trim()
 
                     def timestamp = new Date().format('MMM d, yyyy, h:mm:ss a')
@@ -223,7 +231,7 @@ pipeline {
 
         stage('EAS Build Prerequisites') {
             when {
-                expression { return params.SKIP_EAS_BUILDS != true }
+                expression { return env.EFFECTIVE_EAS_MODE == 'local' }
             }
             steps {
                 sh '''
@@ -238,14 +246,14 @@ pipeline {
 
         stage('Local EAS Builds') {
             when {
-                expression { return params.SKIP_EAS_BUILDS != true }
+                expression { return env.EFFECTIVE_EAS_MODE == 'local' }
             }
             environment {
                 EXPO_TOKEN = credentials('expo-token')
                 ANDROID_HOME = "${HOME}/Library/Android/sdk"
             }
             parallel {
-                stage('EAS Build iOS') {
+                stage('EAS Build iOS (local)') {
                     when {
                         expression { return params.PLATFORM == 'both' || params.PLATFORM == 'ios' }
                     }
@@ -271,7 +279,7 @@ pipeline {
                         }
                     }
                 }
-                stage('EAS Build Android') {
+                stage('EAS Build Android (local)') {
                     when {
                         expression { return params.PLATFORM == 'both' || params.PLATFORM == 'android' }
                     }
@@ -294,6 +302,45 @@ pipeline {
                     post {
                         always {
                             archiveArtifacts artifacts: 'example/build-*.apk', allowEmptyArchive: true
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Remote EAS Builds') {
+            when {
+                expression { return env.EFFECTIVE_EAS_MODE == 'remote' }
+            }
+            environment {
+                EXPO_TOKEN = credentials('expo-token')
+            }
+            parallel {
+                stage('EAS Build iOS (remote)') {
+                    when {
+                        expression { return params.PLATFORM == 'both' || params.PLATFORM == 'ios' }
+                    }
+                    steps {
+                        timeout(time: 45, unit: 'MINUTES') {
+                            sh '''
+                                cd example
+                                echo "=== Remote EAS iOS Build ==="
+                                npx eas-cli build --platform ios --profile preview --non-interactive
+                            '''
+                        }
+                    }
+                }
+                stage('EAS Build Android (remote)') {
+                    when {
+                        expression { return params.PLATFORM == 'both' || params.PLATFORM == 'android' }
+                    }
+                    steps {
+                        timeout(time: 45, unit: 'MINUTES') {
+                            sh '''
+                                cd example
+                                echo "=== Remote EAS Android Build ==="
+                                npx eas-cli build --platform android --profile preview --non-interactive
+                            '''
                         }
                     }
                 }
@@ -337,7 +384,7 @@ pipeline {
                 def prInfo = isPullRequest() ? " (PR #${getPullRequestId()})" : ""
                 def branchName = env.DISPLAY_BRANCH ?: getBranchName()
                 def duration = formatDuration(System.currentTimeMillis() - currentBuild.startTimeInMillis)
-                def skippedEas = params.SKIP_EAS_BUILDS ? " | EAS builds skipped" : ""
+                def skippedEas = env.EFFECTIVE_EAS_MODE == 'skip' ? " | EAS builds skipped" : " | EAS: ${env.EFFECTIVE_EAS_MODE}"
                 def published = params.PUBLISH ? " | :package: Published v${env.PLUGIN_VERSION} (${params.PUBLISH_TAG})" : ""
 
                 slackSend(
