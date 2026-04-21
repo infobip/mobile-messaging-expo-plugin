@@ -115,7 +115,7 @@ pipeline {
                         echo "PUBLISH is enabled — forcing EAS_BUILD_MODE to 'remote'"
                         env.EFFECTIVE_EAS_MODE = 'remote'
                     } else {
-                        env.EFFECTIVE_EAS_MODE = env.EFFECTIVE_EAS_MODE ?: 'local'
+                        env.EFFECTIVE_EAS_MODE = params.EAS_BUILD_MODE ?: 'local'
                     }
                     env.PLUGIN_VERSION = sh(script: "node -p \"require('./package.json').version\"", returnStdout: true).trim()
 
