@@ -63,6 +63,11 @@ pipeline {
             defaultValue: '',
             description: 'Pull Request ID (leave empty if not a PR build)'
         )
+        choice(
+            name: 'PLATFORM',
+            choices: ['both', 'ios', 'android'],
+            description: 'Platform to build: both, ios only, or android only'
+        )
         booleanParam(
             name: 'SKIP_EAS_BUILDS',
             defaultValue: false,
@@ -82,6 +87,8 @@ pipeline {
 
     environment {
         SLACK_CHANNEL = '#mobile-plugins-e2e-tests-build-results'
+        LANG = 'en_US.UTF-8'
+        LC_ALL = 'en_US.UTF-8'
     }
 
     stages {
@@ -102,6 +109,7 @@ pipeline {
 
                     env.GIT_COMMIT = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                     env.DISPLAY_BRANCH = branchToCheckout
+                    env.PLUGIN_VERSION = sh(script: "node -p \"require('./package.json').version\"", returnStdout: true).trim()
 
                     def timestamp = new Date().format('MMM d, yyyy, h:mm:ss a')
                     currentBuild.displayName = "#${env.BUILD_NUMBER} ${branchToCheckout} (${timestamp})"
@@ -131,7 +139,7 @@ pipeline {
                     test -d plugin/build/android || (echo "FAIL: Android build output missing" && exit 1)
                     test -f plugin/build/support/nseTemplates/NotificationService.swift || (echo "FAIL: NSE templates missing" && exit 1)
 
-                    echo "Build output verified ✓"
+                    echo "Build output verified"
                     ls -la plugin/build/
                 '''
             }
@@ -144,7 +152,7 @@ pipeline {
                         sh '''
                             echo "=== TypeScript type check ==="
                             npx tsc --noEmit
-                            echo "TypeScript check passed ✓"
+                            echo "TypeScript check passed"
                         '''
                     }
                 }
@@ -171,7 +179,7 @@ pipeline {
                             grep -q "InfobipAppDelegate.swift" /tmp/pack-output.txt || (echo "FAIL: AppDelegate subscriber missing from package" && exit 1)
                             grep -q "podspec" /tmp/pack-output.txt || (echo "FAIL: podspec missing from package" && exit 1)
 
-                            echo "Package contents verified ✓"
+                            echo "Package contents verified"
                         '''
                     }
                 }
@@ -186,43 +194,29 @@ pipeline {
                     npx expo prebuild --clean
 
                     echo "=== Verifying iOS output ==="
-                    # Entitlements
                     grep -q "aps-environment" ios/InfobipExpoExample/InfobipExpoExample.entitlements || (echo "FAIL: aps-environment missing from entitlements" && exit 1)
                     grep -q "com.apple.security.application-groups" ios/InfobipExpoExample/InfobipExpoExample.entitlements || (echo "FAIL: App Groups missing from entitlements" && exit 1)
 
-                    # NSE files
                     test -f ios/InfobipNotificationServiceExtension/NotificationService.swift || (echo "FAIL: NSE Swift file missing" && exit 1)
                     test -f ios/InfobipNotificationServiceExtension/InfobipNotificationServiceExtension-Info.plist || (echo "FAIL: NSE plist missing" && exit 1)
                     test -f ios/InfobipNotificationServiceExtension/InfobipNotificationServiceExtension.entitlements || (echo "FAIL: NSE entitlements missing" && exit 1)
 
-                    # NSE target in Xcode project
                     grep -q "InfobipNotificationServiceExtension" ios/InfobipExpoExample.xcodeproj/project.pbxproj || (echo "FAIL: NSE target not in Xcode project" && exit 1)
-
-                    # NSE in Podfile
                     grep -q "MobileMessagingNotificationExtension" ios/Podfile || (echo "FAIL: NSE pod not in Podfile" && exit 1)
-
-                    # Info.plist
                     grep -q "remote-notification" ios/InfobipExpoExample/Info.plist || (echo "FAIL: remote-notification not in Info.plist" && exit 1)
                     grep -q "com.mobilemessaging.app_group" ios/InfobipExpoExample/Info.plist || (echo "FAIL: app_group key not in Info.plist" && exit 1)
-
-                    # Deep link scheme
                     grep -q "com.infobip.mobilemessaging" ios/InfobipExpoExample/Info.plist || (echo "FAIL: Deep link scheme not in Info.plist" && exit 1)
 
-                    echo "iOS prebuild verified ✓"
+                    echo "iOS prebuild verified"
 
                     echo "=== Verifying Android output ==="
-                    # Google Services
                     test -f android/app/google-services.json || (echo "FAIL: google-services.json not copied" && exit 1)
                     grep -q "com.google.gms.google-services" android/app/build.gradle || (echo "FAIL: Google Services plugin not applied" && exit 1)
-
-                    # Manifest fixes
                     grep -q "tools:replace" android/app/src/main/AndroidManifest.xml || (echo "FAIL: tools:replace not in manifest" && exit 1)
-
-                    # Deep link
                     grep -q "com.infobip.mobilemessaging" android/app/src/main/AndroidManifest.xml || (echo "FAIL: Deep link scheme not in manifest" && exit 1)
                     grep -q "singleTask" android/app/src/main/AndroidManifest.xml || (echo "FAIL: singleTask not set on MainActivity" && exit 1)
 
-                    echo "Android prebuild verified ✓"
+                    echo "Android prebuild verified"
                 '''
             }
         }
@@ -233,18 +227,19 @@ pipeline {
             }
             parallel {
                 stage('EAS Build iOS') {
+                    when {
+                        expression { return params.PLATFORM == 'both' || params.PLATFORM == 'ios' }
+                    }
                     steps {
                         timeout(time: 30, unit: 'MINUTES') {
                             sh '''
                                 cd example
                                 echo "=== Local EAS iOS Build ==="
-                                eas build --platform ios --profile preview --local --non-interactive 2>&1 | tee /tmp/eas-ios-build.log
+                                npx eas-cli build --platform ios --profile preview --local --non-interactive 2>&1 | tee /tmp/eas-ios-build.log
 
-                                # Find and archive the IPA
                                 IPA=$(ls -t build-*.ipa 2>/dev/null | head -1)
                                 if [ -n "$IPA" ]; then
                                     echo "iOS build artifact: $IPA"
-                                    echo "$IPA" > /tmp/ios-artifact-name.txt
                                 else
                                     echo "WARNING: No IPA file found"
                                 fi
@@ -258,18 +253,19 @@ pipeline {
                     }
                 }
                 stage('EAS Build Android') {
+                    when {
+                        expression { return params.PLATFORM == 'both' || params.PLATFORM == 'android' }
+                    }
                     steps {
                         timeout(time: 30, unit: 'MINUTES') {
                             sh '''
                                 cd example
                                 echo "=== Local EAS Android Build ==="
-                                eas build --platform android --profile preview --local --non-interactive 2>&1 | tee /tmp/eas-android-build.log
+                                npx eas-cli build --platform android --profile preview --local --non-interactive 2>&1 | tee /tmp/eas-android-build.log
 
-                                # Find and archive the APK
                                 APK=$(ls -t build-*.apk 2>/dev/null | head -1)
                                 if [ -n "$APK" ]; then
                                     echo "Android build artifact: $APK"
-                                    echo "$APK" > /tmp/android-artifact-name.txt
                                 else
                                     echo "WARNING: No APK file found"
                                 fi
@@ -291,17 +287,16 @@ pipeline {
             }
             steps {
                 script {
-                    def version = sh(script: "node -p \"require('./package.json').version\"", returnStdout: true).trim()
                     def tag = params.PUBLISH_TAG ?: 'latest'
 
                     echo """
-╔════════════════════════════════════════════╗
-║           PUBLISHING TO NPM                ║
-╠════════════════════════════════════════════╣
+╔════════════════════════════════════════════════╗
+║             PUBLISHING TO NPM                  ║
+╠════════════════════════════════════════════════╣
 ║  Package:  infobip-mobile-messaging-expo-plugin
-║  Version:  ${version}
+║  Version:  ${env.PLUGIN_VERSION}
 ║  Tag:      ${tag}
-╚════════════════════════════════════════════╝
+╚════════════════════════════════════════════════╝
                     """
 
                     sh """
@@ -309,8 +304,8 @@ pipeline {
 
                         echo "=== Verifying published package ==="
                         sleep 5
-                        npm view infobip-mobile-messaging-expo-plugin@${version} version
-                        echo "Published successfully ✓"
+                        npm view infobip-mobile-messaging-expo-plugin@${env.PLUGIN_VERSION} version
+                        echo "Published successfully"
                     """
                 }
             }
@@ -323,15 +318,14 @@ pipeline {
                 def prInfo = isPullRequest() ? " (PR #${getPullRequestId()})" : ""
                 def branchName = env.DISPLAY_BRANCH ?: getBranchName()
                 def duration = formatDuration(System.currentTimeMillis() - currentBuild.startTimeInMillis)
-                def version = sh(script: "node -p \"require('./package.json').version\"", returnStdout: true).trim()
                 def skippedEas = params.SKIP_EAS_BUILDS ? " | EAS builds skipped" : ""
-                def published = params.PUBLISH ? " | :package: Published v${version} (${params.PUBLISH_TAG})" : ""
+                def published = params.PUBLISH ? " | :package: Published v${env.PLUGIN_VERSION} (${params.PUBLISH_TAG})" : ""
 
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'good',
                     message: ":white_check_mark: *Expo Plugin* #${env.BUILD_NUMBER} passed${prInfo}\n" +
-                             "> Branch: `${branchName}` | v${version}\n" +
+                             "> Branch: `${branchName}` | v${env.PLUGIN_VERSION}\n" +
                              "> Duration: ${duration}${skippedEas}${published}\n" +
                              "> <${env.BUILD_URL}|View Build>"
                 )
