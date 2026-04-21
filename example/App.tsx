@@ -58,7 +58,7 @@ async function persistEventLog(eventName: string, value: any): Promise<void> {
 
 class App extends Component<{}, AppState> {
   configuration: Configuration = {
-    applicationCode: 'c317c94e8c3676d9dc6db8ad21177fbd-d7b2f232-77ae-43d2-b98f-488b934ee59c',
+    applicationCode: '',
     ios: {
       notificationTypes: ['alert', 'badge', 'sound'],
     },
