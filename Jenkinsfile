@@ -221,12 +221,28 @@ pipeline {
             }
         }
 
+        stage('EAS Build Prerequisites') {
+            when {
+                expression { return params.SKIP_EAS_BUILDS != true }
+            }
+            steps {
+                sh '''
+                    if ! command -v fastlane &> /dev/null; then
+                        echo "Installing Fastlane..."
+                        brew install fastlane || gem install fastlane --no-document
+                    fi
+                    fastlane --version
+                '''
+            }
+        }
+
         stage('Local EAS Builds') {
             when {
                 expression { return params.SKIP_EAS_BUILDS != true }
             }
             environment {
                 EXPO_TOKEN = credentials('expo-token')
+                ANDROID_HOME = "${HOME}/Library/Android/sdk"
             }
             parallel {
                 stage('EAS Build iOS') {
