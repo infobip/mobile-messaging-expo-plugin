@@ -1,13 +1,11 @@
 import { ConfigPlugin, withXcodeProject } from 'expo/config-plugins';
-import * as fs from 'fs';
-import * as path from 'path';
 import { InfobipPluginProps } from '../types';
+import { resolveIosDeploymentTarget } from '../helpers';
 import {
   NSE_TARGET_NAME,
   NSE_SOURCE_FILE,
   NSE_ENTITLEMENTS_FILE,
   NSE_PLIST_FILE,
-  DEFAULT_IOS_DEPLOYMENT_TARGET,
 } from './constants';
 
 export const withInfobipXcodeProject: ConfigPlugin<InfobipPluginProps> = (config, props) => {
@@ -76,24 +74,7 @@ export const withInfobipXcodeProject: ConfigPlugin<InfobipPluginProps> = (config
     );
 
     // 6. Configure build settings
-    // Resolve the iOS deployment target for the NSE. Priority:
-    //   1. Explicit plugin prop (iosDeploymentTarget)
-    //   2. Podfile.properties.json 'ios.deploymentTarget' — this is what the Podfile
-    //      actually uses (`platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'`),
-    //      so pods are compiled at this level. The NSE target MUST match or exceed it,
-    //      otherwise: "compiling for iOS X, but module has minimum deployment target Y".
-    //   3. DEFAULT_IOS_DEPLOYMENT_TARGET (15.1, matching Expo SDK 55 Podfile default)
-    let podfileDeploymentTarget: string | undefined;
-    try {
-      const propsPath = path.join(newConfig.modRequest.projectRoot, 'ios', 'Podfile.properties.json');
-      if (fs.existsSync(propsPath)) {
-        const podfileProps = JSON.parse(fs.readFileSync(propsPath, 'utf-8'));
-        podfileDeploymentTarget = podfileProps['ios.deploymentTarget'];
-      }
-    } catch (e) {
-      // Ignore — fall through to default
-    }
-    const deploymentTarget = props.iosDeploymentTarget ?? podfileDeploymentTarget ?? DEFAULT_IOS_DEPLOYMENT_TARGET;
+    const deploymentTarget = resolveIosDeploymentTarget(newConfig.modRequest.projectRoot, props.iosDeploymentTarget);
     const configurations = xcodeProject.pbxXCBuildConfigurationSection();
     for (const key in configurations) {
       if (
