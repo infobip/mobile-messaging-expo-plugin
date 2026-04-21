@@ -71,7 +71,7 @@ pipeline {
         booleanParam(
             name: 'SKIP_EAS_BUILDS',
             defaultValue: false,
-            description: 'Skip local EAS builds (faster feedback for plugin-only changes)'
+            description: 'Skip local EAS buids (faster feedback for plugin-only changes)'
         )
         booleanParam(
             name: 'PUBLISH',
