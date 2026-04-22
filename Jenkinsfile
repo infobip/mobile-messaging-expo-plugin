@@ -321,7 +321,7 @@ pipeline {
                         expression { return params.PLATFORM == 'both' || params.PLATFORM == 'ios' }
                     }
                     steps {
-                        timeout(time: 45, unit: 'MINUTES') {
+                        timeout(time: 90, unit: 'MINUTES') {
                             sh '''
                                 cd example
                                 echo "=== Remote EAS iOS Build ==="
@@ -335,7 +335,7 @@ pipeline {
                         expression { return params.PLATFORM == 'both' || params.PLATFORM == 'android' }
                     }
                     steps {
-                        timeout(time: 45, unit: 'MINUTES') {
+                        timeout(time: 90, unit: 'MINUTES') {
                             sh '''
                                 cd example
                                 echo "=== Remote EAS Android Build ==="
