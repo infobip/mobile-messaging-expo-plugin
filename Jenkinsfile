@@ -56,7 +56,7 @@ pipeline {
             branchFilter: 'origin/(.*)',
             selectedValue: 'DEFAULT',
             sortMode: 'ASCENDING_SMART',
-            useRepository: '.*infobip-mobile-messaging-expo-plugin.*'
+            useRepository: '.*mobile-messaging-expo-plugin.*'
         )
         string(
             name: 'PR_ID',
