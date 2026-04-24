@@ -101,10 +101,16 @@ pipeline {
                     checkout([
                         $class: 'GitSCM',
                         branches: [[name: "*/${branchToCheckout}"]],
-                        userRemoteConfigs: [[
-                            url: 'ssh://git@git.ib-ci.com:7999/mml/infobip-mobile-messaging-expo-plugin.git',
-                            credentialsId: 'bitbucket-credentials'
-                        ]]
+                        userRemoteConfigs: [
+                            [
+                                url: 'git@github.com:infobip/mobile-messaging-expo-plugin.git',
+                                credentialsId: 'c47bc470-5484-42c4-b35d-a8cee5f4de1b'
+                            ],
+                            [
+                                url: 'https://git.ib-ci.com/scm/mml/infobip-mobile-messaging-expo-plugin.git',
+                                credentialsId: '3019b761-a4ec-4af1-8dad-a825c70be1bd'
+                            ]
+                        ]
                     ])
 
                     env.GIT_COMMIT = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
@@ -351,6 +357,9 @@ pipeline {
             when {
                 expression { return params.PUBLISH == true }
             }
+            environment {
+                NPM_TOKEN = credentials('npm-token')
+            }
             steps {
                 script {
                     def tag = params.PUBLISH_TAG ?: 'latest'
@@ -366,12 +375,18 @@ pipeline {
                     """
 
                     sh """
+                        echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > .npmrc
                         npm publish --tag ${tag}
 
                         echo "=== Verifying published package ==="
                         sleep 5
                         npm view infobip-mobile-messaging-expo-plugin@${env.PLUGIN_VERSION} version
                         echo "Published successfully"
+
+                        echo "=== Tagging release ==="
+                        git tag -a "v${env.PLUGIN_VERSION}" -m "Release v${env.PLUGIN_VERSION}"
+                        git push origin "v${env.PLUGIN_VERSION}" || true
+                        echo "Release tagged"
                     """
                 }
             }
