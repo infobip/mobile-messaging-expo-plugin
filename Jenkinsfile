@@ -48,15 +48,10 @@ pipeline {
     }
 
     parameters {
-        gitParameter(
+        string(
             name: 'BRANCH_NAME_TO_BUILD',
-            type: 'PT_BRANCH',
             defaultValue: 'master',
-            description: 'Branch to build and test',
-            branchFilter: 'origin/(.*)',
-            selectedValue: 'DEFAULT',
-            sortMode: 'ASCENDING_SMART',
-            useRepository: '.*mobile-messaging-expo-plugin.*'
+            description: 'Branch to build and test (e.g. master, feature/xyz)'
         )
         string(
             name: 'PR_ID',
