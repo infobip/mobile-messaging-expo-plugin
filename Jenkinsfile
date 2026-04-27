@@ -40,7 +40,11 @@ def getBranchName() {
 def loadNvm() {
     return '''
         export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+        if [ -s "$NVM_DIR/nvm.sh" ]; then
+            set +x
+            . "$NVM_DIR/nvm.sh" > /dev/null 2>&1
+            set -x
+        fi
     '''
 }
 
