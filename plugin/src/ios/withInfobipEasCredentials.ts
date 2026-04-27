@@ -2,15 +2,21 @@ import { ConfigPlugin } from 'expo/config-plugins';
 import { InfobipPluginProps } from '../types';
 import { NSE_TARGET_NAME, DEFAULT_APP_GROUP_SUFFIX } from './constants';
 
+type AppExtensionConfig = {
+  targetName: string;
+  bundleIdentifier: string;
+  entitlements: Record<string, unknown>;
+};
+
 export const withInfobipEasCredentials: ConfigPlugin<InfobipPluginProps> = (config, props) => {
   const bundleId = `${config.ios?.bundleIdentifier}.${NSE_TARGET_NAME}`;
   const groupId = props.iosAppGroup
     ?? `group.${config.ios?.bundleIdentifier}.${props.iosAppGroupSuffix ?? DEFAULT_APP_GROUP_SUFFIX}`;
 
-  const existingExtensions: any[] =
-    config.extra?.eas?.build?.experimental?.ios?.appExtensions ?? [];
+  const existingExtensions: AppExtensionConfig[] =
+    (config.extra?.eas?.build?.experimental?.ios?.appExtensions as AppExtensionConfig[] | undefined) ?? [];
   const filtered = existingExtensions.filter(
-    (ext: any) => ext.targetName !== NSE_TARGET_NAME
+    (ext: AppExtensionConfig) => ext.targetName !== NSE_TARGET_NAME
   );
 
   config.extra = {
@@ -30,7 +36,6 @@ export const withInfobipEasCredentials: ConfigPlugin<InfobipPluginProps> = (conf
                 bundleIdentifier: bundleId,
                 entitlements: {
                   'com.apple.security.application-groups': [groupId],
-                  'aps-environment': props.iosMode ?? 'development',
                 },
               },
             ],

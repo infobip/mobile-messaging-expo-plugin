@@ -8,6 +8,12 @@ import { withInfobipXcodeProject } from './withInfobipXcodeProject';
 import { withInfobipEasCredentials } from './withInfobipEasCredentials';
 
 export const withInfobipIos: ConfigPlugin<InfobipPluginProps> = (config, props) => {
+  if (!config.ios?.bundleIdentifier) {
+    throw new Error(
+      '[infobip] ios.bundleIdentifier is required in app.json/app.config.js to generate the NSE target bundle id.'
+    );
+  }
+
   const plugins: [ConfigPlugin<InfobipPluginProps>, InfobipPluginProps][] = [
     [withInfobipEntitlements, props],
     [withInfobipInfoPlist, props],

@@ -37,8 +37,7 @@
           "enableGoogleServices": true,
           "deepLinkScheme": "com.infobip.mobilemessaging"
         }
-      ],
-      "expo-build-properties"
+      ]
     ],
     "extra": {
       "eas": {
@@ -52,8 +51,7 @@
                   "entitlements": {
                     "com.apple.security.application-groups": [
                       "group.com.infobip.mobilemessaging.reactnative"
-                    ],
-                    "aps-environment": "development"
+                    ]
                   }
                 }
               ]

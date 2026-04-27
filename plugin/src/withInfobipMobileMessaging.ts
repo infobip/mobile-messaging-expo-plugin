@@ -16,7 +16,8 @@ const withInfobipMobileMessaging: ConfigPlugin<InfobipPluginProps | undefined> =
     iosAppGroupSuffix: props.iosAppGroupSuffix ?? 'infobip',
     enableNotificationExtension: props.enableNotificationExtension ?? true,
     // iosDeploymentTarget intentionally left unset here — resolved dynamically
-    // in withInfobipXcodeProject from Podfile.properties.json or DEFAULT_IOS_DEPLOYMENT_TARGET
+    // in withInfobipXcodeProject from the main app's IPHONEOS_DEPLOYMENT_TARGET
+    // or DEFAULT_IOS_DEPLOYMENT_TARGET.
     enableGoogleServices: props.enableGoogleServices ?? true,
     nseVersion: props.nseVersion ?? '15.0.0',
     ...props,

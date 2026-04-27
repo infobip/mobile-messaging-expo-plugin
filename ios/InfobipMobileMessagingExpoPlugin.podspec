@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.homepage       = 'https://github.com/infobip/mobile-messaging-expo-plugin'
   s.license        = 'MIT'
   s.author         = 'Infobip'
-  s.platform       = :ios, '15.0'
+  s.platform       = :ios, '15.1'
   s.swift_version  = '5.5'
   s.source         = { :git => 'https://github.com/infobip/mobile-messaging-expo-plugin.git', :tag => s.version }
   s.source_files   = 'ExpoAdapterInfobip/**/*.swift'

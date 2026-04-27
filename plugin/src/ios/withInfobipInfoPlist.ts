@@ -23,13 +23,23 @@ export const withInfobipInfoPlist: ConfigPlugin<InfobipPluginProps> = (config, p
         newConfig.modResults.CFBundleURLTypes = [];
       }
       const urlTypes = newConfig.modResults.CFBundleURLTypes as any[];
-      const schemeExists = urlTypes.some((t: any) =>
-        t.CFBundleURLSchemes?.includes(props.deepLinkScheme)
-      );
-      if (!schemeExists) {
-        urlTypes.push({
-          CFBundleURLSchemes: [props.deepLinkScheme],
-        });
+      const INFOBIP_URL_NAME = 'infobip-mobile-messaging';
+      // Prefer match by our well-known CFBundleURLName (so repeated prebuilds with a
+      // changed deepLinkScheme don't accumulate stale entries), then fall back to
+      // matching by raw scheme for legacy entries written before this tag existed.
+      const existingByName = urlTypes.find((t: any) => t.CFBundleURLName === INFOBIP_URL_NAME);
+      if (existingByName) {
+        existingByName.CFBundleURLSchemes = [props.deepLinkScheme];
+      } else {
+        const schemeExists = urlTypes.some((t: any) =>
+          t.CFBundleURLSchemes?.includes(props.deepLinkScheme)
+        );
+        if (!schemeExists) {
+          urlTypes.push({
+            CFBundleURLName: INFOBIP_URL_NAME,
+            CFBundleURLSchemes: [props.deepLinkScheme],
+          });
+        }
       }
     }
 

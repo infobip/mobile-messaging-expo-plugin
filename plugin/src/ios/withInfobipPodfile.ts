@@ -4,7 +4,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { InfobipPluginProps } from '../types';
 import { NSE_TARGET_NAME, NSE_POD_NAME, NSE_DEFAULT_POD_VERSION, MERGE_TAG_PREFIX } from './constants';
-import { resolveIosDeploymentTarget } from '../helpers';
 
 export const withInfobipPodfile: ConfigPlugin<InfobipPluginProps> = (config, props) => {
   return withDangerousMod(config, [
@@ -20,12 +19,9 @@ export const withInfobipPodfile: ConfigPlugin<InfobipPluginProps> = (config, pro
       const podfileContent = fs.readFileSync(podfilePath, 'utf-8');
       const nseVersion = props.nseVersion ?? NSE_DEFAULT_POD_VERSION;
 
-      const podfilePlatformVersion = resolveIosDeploymentTarget(newConfig.modRequest.projectRoot);
-
       const nseTarget = [
         '',
         `target '${NSE_TARGET_NAME}' do`,
-        `  platform :ios, '${podfilePlatformVersion}'`,
         `  use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']`,
         `  use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym if ENV['USE_FRAMEWORKS']`,
         `  pod '${NSE_POD_NAME}', '${nseVersion}'`,

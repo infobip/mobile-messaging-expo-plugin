@@ -10,7 +10,12 @@
     "clean": "expo-module clean plugin",
     "lint": "expo-module lint plugin"
   },
-  "keywords": ["expo", "infobip", "push-notifications", "config-plugin"],
+  "keywords": [
+    "expo",
+    "infobip",
+    "push-notifications",
+    "config-plugin"
+  ],
   "license": "MIT",
   "peerDependencies": {
     "expo": ">=55.0.0"
