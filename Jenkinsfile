@@ -136,13 +136,7 @@ pipeline {
                     env.GIT_COMMIT = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                     env.DISPLAY_BRANCH = branchToCheckout
 
-                    // Publishing requires remote EAS build — override if needed
-                    if (params.PUBLISH && env.EFFECTIVE_EAS_MODE != 'remote') {
-                        echo "PUBLISH is enabled — forcing EAS_BUILD_MODE to 'remote'"
-                        env.EFFECTIVE_EAS_MODE = 'remote'
-                    } else {
-                        env.EFFECTIVE_EAS_MODE = params.EAS_BUILD_MODE ?: 'local'
-                    }
+                    env.EFFECTIVE_EAS_MODE = params.EAS_BUILD_MODE ?: 'local'
                     env.PLUGIN_VERSION = sh(script: "${loadNvm()} node -p \"require('./package.json').version\"", returnStdout: true).trim()
 
                     def timestamp = new Date().format('MMM d, yyyy, h:mm:ss a')
