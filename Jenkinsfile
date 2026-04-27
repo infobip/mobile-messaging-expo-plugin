@@ -37,6 +37,13 @@ def getBranchName() {
     return params.BRANCH_NAME_TO_BUILD ?: env.BRANCH_NAME ?: env.GIT_BRANCH?.replaceAll('origin/', '') ?: 'master'
 }
 
+def loadNvm() {
+    return '''
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    '''
+}
+
 pipeline {
     agent { label 'ci-zg-mac-mini-02 || ci-zg-mac-mini-03' }
 
@@ -118,7 +125,7 @@ pipeline {
                     } else {
                         env.EFFECTIVE_EAS_MODE = params.EAS_BUILD_MODE ?: 'local'
                     }
-                    env.PLUGIN_VERSION = sh(script: "node -p \"require('./package.json').version\"", returnStdout: true).trim()
+                    env.PLUGIN_VERSION = sh(script: "${loadNvm()} node -p \"require('./package.json').version\"", returnStdout: true).trim()
 
                     def timestamp = new Date().format('MMM d, yyyy, h:mm:ss a')
                     currentBuild.displayName = "#${env.BUILD_NUMBER} ${branchToCheckout} (${timestamp})"
@@ -130,7 +137,7 @@ pipeline {
 
         stage('Install & Build') {
             steps {
-                sh '''
+                sh "${loadNvm()} " + '''
                     echo "=== Environment ==="
                     node --version
                     npm --version
@@ -158,7 +165,7 @@ pipeline {
             parallel {
                 stage('TypeScript Check') {
                     steps {
-                        sh '''
+                        sh "${loadNvm()} " + '''
                             echo "=== TypeScript type check ==="
                             npx tsc --noEmit
                             echo "TypeScript check passed"
@@ -167,7 +174,7 @@ pipeline {
                 }
                 stage('Lint') {
                     steps {
-                        sh '''
+                        sh "${loadNvm()} " + '''
                             echo "=== Linting ==="
                             npm run lint || true
                             echo "Lint completed"
@@ -176,7 +183,7 @@ pipeline {
                 }
                 stage('Package Check') {
                     steps {
-                        sh '''
+                        sh "${loadNvm()} " + '''
                             echo "=== npm pack dry run ==="
                             npm pack --dry-run 2>&1 | tee /tmp/pack-output.txt
 
@@ -197,7 +204,7 @@ pipeline {
 
         stage('Prebuild Verification') {
             steps {
-                sh '''
+                sh "${loadNvm()} " + '''
                     echo "=== Running expo prebuild --clean ==="
                     cd example
                     npx expo prebuild --clean
@@ -260,7 +267,7 @@ pipeline {
                     }
                     steps {
                         timeout(time: 30, unit: 'MINUTES') {
-                            sh '''
+                            sh "${loadNvm()} " + '''
                                 cd example
                                 echo "=== Local EAS iOS Build ==="
                                 npx eas-cli build --platform ios --profile preview --local --non-interactive 2>&1 | tee /tmp/eas-ios-build.log
@@ -286,7 +293,7 @@ pipeline {
                     }
                     steps {
                         timeout(time: 30, unit: 'MINUTES') {
-                            sh '''
+                            sh "${loadNvm()} " + '''
                                 cd example
                                 echo "=== Local EAS Android Build ==="
                                 npx eas-cli build --platform android --profile preview --local --non-interactive 2>&1 | tee /tmp/eas-android-build.log
@@ -323,7 +330,7 @@ pipeline {
                     }
                     steps {
                         timeout(time: 90, unit: 'MINUTES') {
-                            sh '''
+                            sh "${loadNvm()} " + '''
                                 cd example
                                 echo "=== Remote EAS iOS Build ==="
                                 npx eas-cli build --platform ios --profile preview --non-interactive
@@ -337,7 +344,7 @@ pipeline {
                     }
                     steps {
                         timeout(time: 90, unit: 'MINUTES') {
-                            sh '''
+                            sh "${loadNvm()} " + '''
                                 cd example
                                 echo "=== Remote EAS Android Build ==="
                                 npx eas-cli build --platform android --profile preview --non-interactive
@@ -369,7 +376,7 @@ pipeline {
 ╚════════════════════════════════════════════════╝
                     """
 
-                    sh """
+                    sh "${loadNvm()} " + """
                         echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > .npmrc
                         npm publish --tag ${tag}
 
