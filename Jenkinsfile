@@ -419,8 +419,16 @@ pipeline {
                         echo "=== Pushing to Bitbucket ==="
                         git remote set-url origin https://\${GIT_CREDENTIALS_USR}:\${GIT_CREDENTIALS_PSW}@git.ib-ci.com/scm/mml/infobip-mobile-messaging-expo-plugin.git
                         git push origin master --tags
-                        echo "Release pushed"
+                        echo "Bitbucket pushed"
                     """
+
+                    sshagent(['c47bc470-5484-42c4-b35d-a8cee5f4de1b']) {
+                        sh '''
+                            echo "=== Pushing to GitHub ==="
+                            git push git@github.com:infobip/mobile-messaging-expo-plugin.git master:main --tags
+                            echo "GitHub pushed"
+                        '''
+                    }
                 }
             }
         }
@@ -429,8 +437,18 @@ pipeline {
     post {
         success {
             script {
-                def prInfo = isPullRequest() ? " (PR #${getPullRequestId()})" : ""
                 def branchName = env.DISPLAY_BRANCH ?: getBranchName()
+
+                if (branchName == 'master') {
+                    sshagent(['c47bc470-5484-42c4-b35d-a8cee5f4de1b']) {
+                        sh '''
+                            echo "=== Syncing master to GitHub main ==="
+                            git push git@github.com:infobip/mobile-messaging-expo-plugin.git master:main --tags || echo "GitHub sync failed (non-fatal)"
+                        '''
+                    }
+                }
+
+                def prInfo = isPullRequest() ? " (PR #${getPullRequestId()})" : ""
                 def duration = formatDuration(System.currentTimeMillis() - currentBuild.startTimeInMillis)
                 def skippedEas = env.EFFECTIVE_EAS_MODE == 'skip' ? " | EAS builds skipped" : " | EAS: ${env.EFFECTIVE_EAS_MODE}"
                 def published = params.PUBLISH ? " | :package: Published v${env.PLUGIN_VERSION} (${params.PUBLISH_TAG})" : ""
