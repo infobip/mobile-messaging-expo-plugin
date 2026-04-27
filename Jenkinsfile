@@ -44,6 +44,15 @@ def loadNvm() {
     '''
 }
 
+def loadRbenv() {
+    return '''
+        if [ -d "$HOME/.rbenv" ]; then
+            export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+            eval "$(rbenv init - 2>/dev/null)" || true
+        fi
+    '''
+}
+
 pipeline {
     agent { label 'ci-zg-mac-mini-02 || ci-zg-mac-mini-03' }
 
@@ -242,11 +251,7 @@ pipeline {
                 expression { return env.EFFECTIVE_EAS_MODE == 'local' }
             }
             steps {
-                sh '''
-                    if ! command -v fastlane &> /dev/null; then
-                        echo "Installing Fastlane..."
-                        brew install fastlane || gem install fastlane --no-document
-                    fi
+                sh "${loadRbenv()} " + '''
                     fastlane --version
                 '''
             }
@@ -267,7 +272,7 @@ pipeline {
                     }
                     steps {
                         timeout(time: 30, unit: 'MINUTES') {
-                            sh "${loadNvm()} " + '''
+                            sh "${loadNvm()} ${loadRbenv()} " + '''
                                 cd example
                                 echo "=== Local EAS iOS Build ==="
                                 npx eas-cli build --platform ios --profile preview --local --non-interactive 2>&1 | tee /tmp/eas-ios-build.log
