@@ -93,6 +93,11 @@ pipeline {
             defaultValue: false,
             description: 'Publish to npm after successful build'
         )
+        string(
+            name: 'RELEASE_VERSION',
+            defaultValue: '',
+            description: 'Version to release (e.g. 1.0.0). Required when PUBLISH is true.'
+        )
         choice(
             name: 'PUBLISH_TAG',
             choices: ['latest', 'beta', 'rc'],
@@ -370,34 +375,51 @@ pipeline {
             }
             environment {
                 NPM_TOKEN = credentials('npm-token')
+                GIT_CREDENTIALS = credentials('3019b761-a4ec-4af1-8dad-a825c70be1bd')
             }
             steps {
                 script {
                     def tag = params.PUBLISH_TAG ?: 'latest'
+                    def releaseVersion = params.RELEASE_VERSION?.trim()
+
+                    if (!releaseVersion) {
+                        error "RELEASE_VERSION is required when PUBLISH is true"
+                    }
 
                     echo """
 ╔════════════════════════════════════════════════╗
 ║             PUBLISHING TO NPM                  ║
 ╠════════════════════════════════════════════════╣
 ║  Package:  infobip-mobile-messaging-expo-plugin
-║  Version:  ${env.PLUGIN_VERSION}
+║  Version:  ${releaseVersion}
 ║  Tag:      ${tag}
 ╚════════════════════════════════════════════════╝
                     """
 
                     sh "${loadNvm()} " + """
+                        echo "=== Setting release version ==="
+                        npm --no-git-tag-version --force version ${releaseVersion}
+                        git add package.json
+
+                        echo "=== Committing release ==="
+                        git commit -a -m "Release: ${releaseVersion}"
+
+                        echo "=== Tagging release ==="
+                        git tag ${releaseVersion} -m "Release: ${releaseVersion}"
+
+                        echo "=== Publishing to npm ==="
                         echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > .npmrc
                         npm publish --tag ${tag}
 
                         echo "=== Verifying published package ==="
                         sleep 5
-                        npm view infobip-mobile-messaging-expo-plugin@${env.PLUGIN_VERSION} version
+                        npm view infobip-mobile-messaging-expo-plugin@${releaseVersion} version
                         echo "Published successfully"
 
-                        echo "=== Tagging release ==="
-                        git tag -a "v${env.PLUGIN_VERSION}" -m "Release v${env.PLUGIN_VERSION}"
-                        git push origin "v${env.PLUGIN_VERSION}" || true
-                        echo "Release tagged"
+                        echo "=== Pushing to Bitbucket ==="
+                        git remote set-url origin https://\${GIT_CREDENTIALS_USR}:\${GIT_CREDENTIALS_PSW}@git.ib-ci.com/scm/mml/infobip-mobile-messaging-expo-plugin.git
+                        git push origin master --tags
+                        echo "Release pushed"
                     """
                 }
             }
