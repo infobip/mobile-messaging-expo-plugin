@@ -27,10 +27,11 @@ public class InfobipAppDelegate: ExpoAppDelegateSubscriber {
         // aggregator gates on `subscribersLeft == 0`) but conceptually wrong.
         //
         // For non-Infobip payloads we cast a `.noData` vote so the aggregator can
-        // still compute the correct final result (.newData > .failed > .noData by
-        // Expo's priority) based on other subscribers' votes. This is safe for
-        // multi-provider setups: each provider's subscriber is called with the
-        // same payload and votes according to whether they recognized it.
+        // still compute the correct final result (Expo's priority:
+        // `.failed > .newData > .noData`) based on other subscribers' votes.
+        // This is safe for multi-provider setups: each provider's subscriber is
+        // called with the same payload and votes according to whether it
+        // recognized it.
         guard MM_MTMessage.make(withPayload: userInfo) != nil else {
             completionHandler(.noData)
             return
