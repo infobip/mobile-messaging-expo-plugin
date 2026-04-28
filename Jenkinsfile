@@ -368,7 +368,7 @@ pipeline {
                 expression { return params.PUBLISH == true }
             }
             environment {
-                NPM_TOKEN = credentials('npm-token')
+                NPM_TOKEN = credentials('1ab2169b-efb6-45b2-8d54-d933d43a7c7e')
                 GIT_CREDENTIALS = credentials('3019b761-a4ec-4af1-8dad-a825c70be1bd')
             }
             steps {
