@@ -1,3 +1,11 @@
+//
+//  types.ts
+//  MobileMessagingExpo
+//
+//  Copyright (c) 2016-2026 Infobip Limited
+//  Licensed under the Apache License, Version 2.0
+//
+
 export type InfobipPluginProps = {
   /** APS environment for push notifications. Default: 'development' */
   iosMode?: 'development' | 'production';

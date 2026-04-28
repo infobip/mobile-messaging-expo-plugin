@@ -1,6 +1,10 @@
-// Type re-exports for convenience
-// The published RN plugin uses a namespace declaration.
-// This module augmentation re-exports the namespace types as named exports.
+//
+//  infobip-mobile-messaging.d.ts
+//  MobileMessagingExpo
+//
+//  Copyright (c) 2016-2026 Infobip Limited
+//  Licensed under the Apache License, Version 2.0
+//
 
 import 'infobip-mobile-messaging-react-native-plugin';
 

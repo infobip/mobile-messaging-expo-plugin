@@ -1,3 +1,11 @@
+//
+//  withInfobipGoogleServices.ts
+//  MobileMessagingExpo
+//
+//  Copyright (c) 2016-2026 Infobip Limited
+//  Licensed under the Apache License, Version 2.0
+//
+
 import { ConfigPlugin, withAppBuildGradle, withProjectBuildGradle } from 'expo/config-plugins';
 import { mergeContents } from '@expo/config-plugins/build/utils/generateCode';
 import {

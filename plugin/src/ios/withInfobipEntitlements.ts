@@ -1,3 +1,11 @@
+//
+//  withInfobipEntitlements.ts
+//  MobileMessagingExpo
+//
+//  Copyright (c) 2016-2026 Infobip Limited
+//  Licensed under the Apache License, Version 2.0
+//
+
 import { ConfigPlugin, withEntitlementsPlist } from 'expo/config-plugins';
 import { InfobipPluginProps } from '../types';
 import { DEFAULT_APP_GROUP_SUFFIX } from './constants';

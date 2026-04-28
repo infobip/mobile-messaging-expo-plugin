@@ -1,3 +1,11 @@
+//
+//  constants.ts
+//  MobileMessagingExpo
+//
+//  Copyright (c) 2016-2026 Infobip Limited
+//  Licensed under the Apache License, Version 2.0
+//
+
 export const NSE_TARGET_NAME = 'InfobipNotificationServiceExtension';
 export const NSE_SOURCE_FILE = 'NotificationService.swift';
 export const NSE_PLIST_FILE = `${NSE_TARGET_NAME}-Info.plist`;

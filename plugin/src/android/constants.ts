@@ -1,3 +1,11 @@
+//
+//  constants.ts
+//  MobileMessagingExpo
+//
+//  Copyright (c) 2016-2026 Infobip Limited
+//  Licensed under the Apache License, Version 2.0
+//
+
 export const GOOGLE_SERVICES_CLASSPATH = 'com.google.gms:google-services';
 export const GOOGLE_SERVICES_CLASSPATH_VERSION = '4.4.2';
 export const GOOGLE_SERVICES_PLUGIN = 'com.google.gms.google-services';
