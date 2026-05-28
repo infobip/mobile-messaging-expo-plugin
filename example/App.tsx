@@ -24,7 +24,11 @@ import PersonalizeScreen from './screens/PersonalizeScreen';
 import UserDataScreen from './screens/UserDataScreen';
 import MessagesScreen from './screens/MessagesScreen';
 import InboxScreen from './screens/InboxScreen';
+import ChatOptionsScreen from './screens/chat/ChatOptionsScreen';
 import EventLogScreen from './screens/EventLogScreen';
+import ChatViewScreen from './screens/chat/ChatViewScreen';
+import ChatViewCustomLayoutScreen from './screens/chat/ChatViewCustomLayoutScreen';
+import ChatViewMultithreadScreen from './screens/chat/ChatViewMultithreadScreen';
 import TestDeeplinkingScreen from './screens/TestDeeplinkingScreen';
 import TestDeeplinkingScreen2 from './screens/TestDeeplinkingScreen2';
 import EventLogStore from './constants/EventLogStore';
@@ -40,6 +44,10 @@ type RootStackParamList = {
   MessagesScreen: undefined;
   InboxScreen: undefined;
   EventLogScreen: undefined;
+  ChatOptionsScreen: undefined;
+  ChatViewScreen: undefined;
+  ChatViewCustomLayoutScreen: undefined;
+  ChatViewMultithreadScreen: undefined;
   TestDeeplinkingScreen: undefined;
   TestDeeplinkingScreen2: undefined;
 };
@@ -59,14 +67,16 @@ async function persistEventLog(eventName: string, value: any): Promise<void> {
 class App extends Component<{}, AppState> {
   configuration: Configuration = {
     applicationCode: '',
+    webRTCUI: {
+      configurationId: '<YOUR_WEBRTC_CONFIGURATION_ID>',
+    },
     ios: {
       notificationTypes: ['alert', 'badge', 'sound'],
     },
     android: {},
     messageStorage: myMessageStorage,
-    inAppChatEnabled: false,
+    inAppChatEnabled: true,
     fullFeaturedInAppsEnabled: true,
-
     logging: true,
   };
 
@@ -83,6 +93,7 @@ class App extends Component<{}, AppState> {
   componentDidMount() {
     const events = [
       ...mobileMessaging.supportedEvents,
+      ...mobileMessaging.inAppChatEvents,
     ];
 
     events.forEach((event: string) => {
@@ -136,7 +147,7 @@ class App extends Component<{}, AppState> {
           <Stack.Screen
             name="HomeScreen"
             component={HomeScreen}
-            options={{title: 'Infobip Push Example App'}}
+            options={{title: 'Infobip Push & Live Chat Example App'}}
           />
           <Stack.Screen
             name="MessagesScreen"
@@ -164,13 +175,67 @@ class App extends Component<{}, AppState> {
             options={{title: 'Edit User Data'}}
           />
           <Stack.Screen
+            name="ChatOptionsScreen"
+            component={ChatOptionsScreen}
+            options={{
+              title: 'Chat options',
+              headerStyle: {
+                backgroundColor: Colors.primary500,
+              },
+              headerTintColor: Colors.tintWhite,
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+            }}
+          />
+          <Stack.Screen
+            name="ChatViewScreen"
+            component={ChatViewScreen}
+            options={{
+              title: 'ChatView React component fullscreen',
+              headerStyle: {
+                backgroundColor: Colors.primary500,
+              },
+              headerTintColor: Colors.tintWhite,
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+            }}
+          />
+          <Stack.Screen
+            name="ChatViewCustomLayoutScreen"
+            component={ChatViewCustomLayoutScreen}
+            options={{
+              title: 'ChatView React component in custom layout',
+              headerTintColor: Colors.tintWhite,
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+            }}
+          />
+          <Stack.Screen
+            name="ChatViewMultithreadScreen"
+            component={ChatViewMultithreadScreen}
+            options={{
+              title: 'Multithread ChatView React component',
+              headerTintColor: Colors.tintWhite,
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+            }}
+          />
+          <Stack.Screen
             name="TestDeeplinkingScreen"
             component={TestDeeplinkingScreen}
             options={{
               title: 'Test Deeplinking',
-              headerStyle: {backgroundColor: Colors.primary500},
+              headerStyle: {
+                backgroundColor: Colors.primary500,
+              },
               headerTintColor: Colors.tintWhite,
-              headerTitleStyle: {fontWeight: 'bold'},
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
             }}
           />
           <Stack.Screen
@@ -178,9 +243,13 @@ class App extends Component<{}, AppState> {
             component={TestDeeplinkingScreen2}
             options={{
               title: 'Test Deeplinking2',
-              headerStyle: {backgroundColor: Colors.primary500},
+              headerStyle: {
+                backgroundColor: Colors.primary500,
+              },
               headerTintColor: Colors.tintWhite,
-              headerTitleStyle: {fontWeight: 'bold'},
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
             }}
           />
         </Stack.Navigator>

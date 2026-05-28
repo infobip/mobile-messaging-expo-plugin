@@ -7,6 +7,8 @@
 //
 
 import 'infobip-mobile-messaging-react-native-plugin';
+import type { ForwardRefExoticComponent, RefAttributes } from 'react';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 declare module 'infobip-mobile-messaging-react-native-plugin' {
   export type Configuration = MobileMessagingReactNative.Configuration;
@@ -21,4 +23,27 @@ declare module 'infobip-mobile-messaging-react-native-plugin' {
   export type CustomMessageStorage = MobileMessagingReactNative.CustomMessageStorage;
   export type PersonalizeContext = MobileMessagingReactNative.PersonalizeContext;
   export type Event = MobileMessagingReactNative.Event;
+
+  // webRTCUI is exported as a class instance in the JS but missing from the .d.ts (v14.8.0 gap)
+  export const webRTCUI: typeof WebRTCUI;
+
+  // ChatException lives in the namespace but is not re-exported at the top level
+  export type ChatException = MobileMessagingReactNative.ChatException;
+
+  // ChatView, ChatViewHandle and ChatViewProps are exported from the JS component
+  // but absent from the .d.ts (v14.8.0 gap)
+  export interface ChatViewHandle {
+    showThreadsList(): void;
+    setExceptionHandler(
+      exceptionHandler: ((exception: ChatException) => void) | null,
+      onError?: (error: Error) => void
+    ): void;
+  }
+
+  export interface ChatViewProps {
+    style?: StyleProp<ViewStyle>;
+    sendButtonColor?: string;
+  }
+
+  export const ChatView: ForwardRefExoticComponent<ChatViewProps & RefAttributes<ChatViewHandle>>;
 }

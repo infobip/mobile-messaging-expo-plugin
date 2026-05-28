@@ -14,6 +14,7 @@ import { withInfobipNSEFiles } from './withInfobipNSEFiles';
 import { withInfobipPodfile } from './withInfobipPodfile';
 import { withInfobipXcodeProject } from './withInfobipXcodeProject';
 import { withInfobipEasCredentials } from './withInfobipEasCredentials';
+import { withInfobipWebRTCUI } from './withInfobipWebRTCUI';
 
 export const withInfobipIos: ConfigPlugin<InfobipPluginProps> = (config, props) => {
   if (!config.ios?.bundleIdentifier) {
@@ -34,6 +35,10 @@ export const withInfobipIos: ConfigPlugin<InfobipPluginProps> = (config, props) 
       [withInfobipXcodeProject, props],
       [withInfobipEasCredentials, props],
     );
+  }
+
+  if (props.enableWebRTCUI === true) {
+    plugins.push([withInfobipWebRTCUI, props]);
   }
 
   return withPlugins(config, plugins);

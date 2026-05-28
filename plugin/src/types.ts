@@ -38,6 +38,10 @@ export type InfobipPluginProps = {
   /** Custom deep link scheme (e.g., 'com.infobip.mobilemessaging') */
   deepLinkScheme?: string;
 
+  /** Whether to enable WebRTC UI (calls) on Android. Adds required build flags,
+   *  core library desugaring, and permissions. Default: false */
+  enableWebRTCUI?: boolean;
+
   /** MobileMessagingNotificationExtension pod version. Default: '15.0.0' */
   nseVersion?: string;
 };

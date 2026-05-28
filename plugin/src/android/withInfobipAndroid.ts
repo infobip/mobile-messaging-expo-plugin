@@ -10,6 +10,7 @@ import { ConfigPlugin, withAndroidManifest } from 'expo/config-plugins';
 import { InfobipPluginProps } from '../types';
 import { withInfobipGoogleServices } from './withInfobipGoogleServices';
 import { withInfobipGoogleServicesFile } from './withInfobipGoogleServicesFile';
+import { withInfobipWebRTCUI } from './withInfobipWebRTCUI';
 
 /**
  * Fix manifest merger conflicts between Infobip SDK and Expo defaults.
@@ -81,6 +82,10 @@ export const withInfobipAndroid: ConfigPlugin<InfobipPluginProps> = (config, pro
   if (props.enableGoogleServices !== false) {
     config = withInfobipGoogleServices(config);
     config = withInfobipGoogleServicesFile(config, props);
+  }
+
+  if (props.enableWebRTCUI === true) {
+    config = withInfobipWebRTCUI(config);
   }
 
   return config;

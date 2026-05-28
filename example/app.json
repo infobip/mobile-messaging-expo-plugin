@@ -35,7 +35,8 @@
           "enableNotificationExtension": true,
           "nseVersion": "15.0.0",
           "enableGoogleServices": true,
-          "deepLinkScheme": "com.infobip.mobilemessaging"
+          "deepLinkScheme": "com.infobip.mobilemessaging",
+          "enableWebRTCUI": true
         }
       ]
     ],

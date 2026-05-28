@@ -185,6 +185,10 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     });
   };
 
+  const showChatOptionsScreen = () => {
+    navigation.navigate('ChatOptionsScreen');
+  };
+
   const showMessagesScreen = () => {
     navigation.navigate('MessagesScreen');
   };
@@ -305,6 +309,11 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           Fetch User Data
         </PrimaryButton>
         <PrimaryButton onPress={editUserDataHandler}>Edit User Data</PrimaryButton>
+      </View>
+
+      <View style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>Chat</Text>
+        <PrimaryButton onPress={showChatOptionsScreen}>Chat Options</PrimaryButton>
       </View>
 
       <View style={styles.sectionCard}>
