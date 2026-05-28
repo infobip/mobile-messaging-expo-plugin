@@ -1,6 +1,6 @@
 {
   "name": "infobip-mobile-messaging-expo-plugin",
-  "version": "0.1.0",
+  "version": "1.2.0",
   "description": "Expo config plugin for Infobip Mobile Messaging React Native SDK",
   "main": "plugin/build/withInfobipMobileMessaging.js",
   "types": "plugin/build/withInfobipMobileMessaging.d.ts",
